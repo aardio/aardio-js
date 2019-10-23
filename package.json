@@ -1,0 +1,21 @@
+{
+  "name": "aardio",
+  "version": "2.3.0", 
+  "description": "aardio for js",   
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "amdName": "aardio",
+  "files": [
+    "package.json",
+    "index.js",
+    "index.d.ts"
+  ],
+  "author": "aardio",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aardio/aardio-js.git"
+  },
+  "keywords": ["aardio"],
+  "sideEffects": false
+}
