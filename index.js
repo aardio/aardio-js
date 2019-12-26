@@ -3,7 +3,7 @@
 支持chrome.app,electron.app 等，可以让aardio,js可以相互调用函数
 */
 
-(function(name, definition) {
+(function (name, definition) {
   var hasDefine = typeof define === "function",
     hasExports = typeof module !== "undefined" && module.exports;
 
@@ -14,7 +14,7 @@
   } else {
     this[name] = definition();
   }
-})("aardio", function() {
+})("aardio", function () {
   let aardio = {};
   let startEnviron;
   let hasWindow = typeof window !== "undefined";
@@ -31,8 +31,8 @@
           aardio.require = window.require;
           const electron = aardio.require("electron").remote;
           startEnviron = electron.getGlobal("startEnviron");
-        } 
- 
+        }
+
         aardio.electronRenderer = true;
         aardio.electron = true;
       }
@@ -40,10 +40,10 @@
       if (module) {
         aardio.require =
           module[
-            "eriuqer"
-              .split("")
-              .reverse()
-              .join("")
+          "eriuqer"
+            .split("")
+            .reverse()
+            .join("")
           ];
       }
 
@@ -71,9 +71,10 @@
 
   let rpchttpServerUrl;
   let wsRpcServerUrl;
+  let rpcAasdl;
 
   if (aardio.browser && !startEnviron) {
-    let urlQuery = function(variable) {
+    let urlQuery = function (variable) {
       let query = window.location.search.slice(1);
       let vars = query.split("&");
       for (let i = 0; i < vars.length; i++) {
@@ -99,6 +100,22 @@
           }
         }
       }
+
+      rpcAasdl = urlQuery("rpcAasdl");
+      if (typeof rpcAasdl == "string") {
+        rpcAasdl = decodeURIComponent(rpcAasdl)
+        sessionStorage.setItem("rpcAasdl", rpcAasdl);
+      } else {
+        rpcAasdl = sessionStorage.getItem("rpcAasdl");
+        if (!rpcAasdl) {
+          rpcAasdl = '{{{$rpcAasdl}}}';
+          if (rpcAasdl === '{{{$rpc" + "Aasdl}}}') {
+            rpcAasdl = null;
+          }
+        }
+      }
+
+      if (rpcAasdl) { rpcAasdl = JSON.parse(rpcAasdl) }
     }
 
     if (rpcServerPort) {
@@ -115,7 +132,7 @@
         startEnviron: null
       };
       let aardioProxy = new Proxy(aardioReal, {
-        get: function(target, key, receiver) {
+        get: function (target, key, receiver) {
           if (key === "default") {
             return aardioProxy;
           }
@@ -137,39 +154,39 @@
     throw new Error("StartEnviron Error!");
   }
 
-  if(startEnviron && startEnviron.indexUrl){ 
+  if (startEnviron && startEnviron.indexUrl) {
     /** @type {string} */
     let indexUrl = startEnviron.indexUrl;
-    let appDir = indexUrl.replace(/([\\\/]+[^\\\/]+[\\\/]+)[^\\\/]*$/,"$1");
- 
-    aardio.fullUrl = function(path){
-      if( path.indexOf(":") > 0 ) return path;  
-      if( path[0] === "#") return `${indexUrl}${path}`
+    let appDir = indexUrl.replace(/([\\\/]+[^\\\/]+[\\\/]+)[^\\\/]*$/, "$1");
 
-      if( path[0] === "/" || path[0] === "\\"){
-        if( appDir.slice(0,5) === "file:"){
-            return `file:///${startEnviron.appPath}/${path}`
+    aardio.fullUrl = function (path) {
+      if (path.indexOf(":") > 0) return path;
+      if (path[0] === "#") return `${indexUrl}${path}`
+
+      if (path[0] === "/" || path[0] === "\\") {
+        if (appDir.slice(0, 5) === "file:") {
+          return `file:///${startEnviron.appPath}/${path}`
         }
-        else{
-            return `${appDir.match(/http:\/\/[^\/]*/,"")[0]}${path}`
+        else {
+          return `${appDir.match(/http:\/\/[^\/]*/, "")[0]}${path}`
         }
       }
-      
+
       return `${appDir}${path}`
     }
   }
-  else if(aardio.browser){ 
-    aardio.fullUrl = function(path){
-      if( path.indexOf(":") > 0 ) return path; 
-      if( window.location.protocol === "file:"){
-        return `${(window.location.href).replace(/[^\\\/]*$/,"")}${path}`
+  else if (aardio.browser) {
+    aardio.fullUrl = function (path) {
+      if (path.indexOf(":") > 0) return path;
+      if (window.location.protocol === "file:") {
+        return `${(window.location.href).replace(/[^\\\/]*$/, "")}${path}`
       }
       return `${window.location.protocol}//${window.location.host}/${path}`
     }
   }
 
-  aardio.getCurrentWindow = function() {};
-  aardio.getMainWindow = function() {};
+  aardio.getCurrentWindow = function () { };
+  aardio.getMainWindow = function () { };
 
   let ws;
   if (!aardio.browser) {
@@ -186,7 +203,7 @@
       }
     }
 
-    aardio.createBrowserWindow = function(options,loadUrl,loadUrlOptions) {
+    aardio.createBrowserWindow = function (options, loadUrl, loadUrlOptions) {
       options = Object.assign(
         {
           frame: startEnviron.browserWindow.frame,
@@ -205,18 +222,18 @@
       );
 
       let win = new BrowserWindow(options);
-      if( loadUrl ){
-          loadUrl = aardio.fullUrl(loadUrl);
-          win.loadURL(loadUrl, loadUrlOptions).catch( (e)=>{  throw e; }   );
+      if (loadUrl) {
+        loadUrl = aardio.fullUrl(loadUrl);
+        win.loadURL(loadUrl, loadUrlOptions).catch((e) => { throw e; });
       }
       return win;
     };
 
-    aardio.getGlobal = function(sharedObjectName) {
+    aardio.getGlobal = function (sharedObjectName) {
       return global[sharedObjectName];
     };
   } else {
-    
+
     if (aardio.electronRenderer) {
       if (aardio.require) {
         const { BrowserWindow, getCurrentWindow, getGlobal } = aardio.require(
@@ -224,17 +241,17 @@
         ).remote;
         startEnviron = getGlobal("startEnviron");
 
-        aardio.getGlobal = function(sharedObjectName) {
+        aardio.getGlobal = function (sharedObjectName) {
           return getGlobal(sharedObjectName);
         };
 
-        aardio.getCurrentWindow = function() {
+        aardio.getCurrentWindow = function () {
           return getCurrentWindow();
         };
 
-        aardio.getMainWindow = function() { return BrowserWindow.fromId(startEnviron.mainWindowId) };
+        aardio.getMainWindow = function () { return BrowserWindow.fromId(startEnviron.mainWindowId) };
 
-        aardio.createBrowserWindow = function(options,loadUrl,loadUrlOptions) {
+        aardio.createBrowserWindow = function (options, loadUrl, loadUrlOptions) {
           options = Object.assign(
             {
               frame: startEnviron.browserWindow.frame,
@@ -252,18 +269,18 @@
             options
           );
           let win = new BrowserWindow(options);
-          if( loadUrl ){
+          if (loadUrl) {
             loadUrl = aardio.fullUrl(loadUrl);
-            win.loadURL(loadUrl, loadUrlOptions).catch( (e)=>{  throw e; }   );
+            win.loadURL(loadUrl, loadUrlOptions).catch((e) => { throw e; });
           }
           return win;
         };
 
-        aardio.isZoomed = function() {
+        aardio.isZoomed = function () {
           return Promise.resolve(aardio.getCurrentWindow().isMaximized());
         };
 
-        aardio.hitMax = function() {
+        aardio.hitMax = function () {
           let win = aardio.getCurrentWindow();
           if (win.isMaximized()) {
             win.unmaximize();
@@ -273,11 +290,11 @@
           return Promise.resolve(win.isMaximized());
         };
 
-        aardio.hitMin = function() {
+        aardio.hitMin = function () {
           return Promise.resolve(aardio.getCurrentWindow().minimize());
         };
 
-        aardio.hitClose = function() {
+        aardio.hitClose = function () {
           return Promise.resolve(aardio.getCurrentWindow().close());
         };
 
@@ -293,12 +310,12 @@
   let rpcNotifications = new Object();
   let xcall;
 
-  ws.onopen = function(e) {};
-  ws.onclose = function(e) {};
-  ws.onerror = function(e) {
+  ws.onopen = function (e) { };
+  ws.onclose = function (e) { };
+  ws.onerror = function (e) {
     console.error(e);
   };
-  ws.onmessage = function(e) {
+  ws.onmessage = function (e) {
     var rep = JSON.parse(e.data);
     if (typeof rep.method == "string") {
       var notify = rpcNotifications[rep.method];
@@ -372,42 +389,45 @@
         continue;
       }
 
-      ex[k] = function() {
+      ex[k] = function () {
         return xcall.apply(ex, [method, ...arguments]);
       };
     }
   }
 
-  if (startEnviron && startEnviron.aasdl) {
-    aasdlParse(startEnviron.aasdl, aardio);
+
+  if (startEnviron && startEnviron.aasdl) { rpcAasdl = startEnviron.aasdl; }
+  if (rpcAasdl) {
+    aasdlParse(rpcAasdl, aardio);
+    delete rpcAasdl;
   }
 
   function initRpcClient() {
     if (aardio.browser) {
-      let onUrlReady = ()=>{
+      let onUrlReady = () => {
         aardio.isReady = true;
         emit("ready", aardio.getCurrentWindow());
-        off("ready"); 
+        off("ready");
 
         xcall("$onUrlReady", document.location.href);
       }
 
-      if ( document.readyState === "complete" ||   ( document.readyState !== "loading" && !document.documentElement.doScroll ) ) {
-          window.setTimeout(onUrlReady);
+      if (document.readyState === "complete" || (document.readyState !== "loading" && !document.documentElement.doScroll)) {
+        window.setTimeout(onUrlReady);
       } else {
-          document.addEventListener( "DOMContentLoaded",function(){   
-              document.removeEventListener("DOMContentLoaded",arguments.callee,false);  
-              onUrlReady();
-          } );
+        document.addEventListener("DOMContentLoaded", function () {
+          document.removeEventListener("DOMContentLoaded", arguments.callee, false);
+          onUrlReady();
+        });
       }
-    } else { 
+    } else {
       const { app, BrowserWindow } = aardio.require("electron");
-      createWindow = function() {
+      createWindow = function () {
         let win = new BrowserWindow(startEnviron.browserWindow);
         aardio.hwndElectron = win.getNativeWindowHandle().readInt32LE();
         startEnviron.mainWindowId = win.id;
         global.mainWindow = win;
-        
+
         if (startEnviron.extensions) {
           startEnviron.extensions.forEach(ext =>
             BrowserWindow.addExtension(ext)
@@ -420,10 +440,10 @@
           win = null;
         });
 
-        if (startEnviron.indexUrl){
-          win.loadURL(startEnviron.indexUrl).then( 
-             ()=>{ aardio.main.onIndexLoad();  }
-          ).catch( (e)=>{  throw e; }   ) 
+        if (startEnviron.indexUrl) {
+          win.loadURL(startEnviron.indexUrl).then(
+            () => { aardio.main.onIndexLoad(); }
+          ).catch((e) => { throw e; })
         }
 
         aardio.isReady = true;
@@ -432,11 +452,11 @@
         aardio.main.onReady(aardio.hwndElectron);
       };
 
-      aardio.getMainWindow = function() {
+      aardio.getMainWindow = function () {
         return global.mainWindow;
       };
 
-      aardio.getCurrentWindow = function() {
+      aardio.getCurrentWindow = function () {
         return global.mainWindow;
       };
 
@@ -479,7 +499,7 @@
 
   if (!aardio.browser) {
     var http = aardio.require("http");
-    xcall = function(method, ...args) {
+    xcall = function (method, ...args) {
       return new Promise((resolve, reject) => {
         rpcReady(() => {
           var reqData = JSON.stringify({
@@ -502,13 +522,13 @@
             }
           };
 
-          var req = http.request(options, function(res) {
+          var req = http.request(options, function (res) {
             var rawData = "";
-            res.on("data", function(chunk) {
+            res.on("data", function (chunk) {
               rawData += chunk;
             });
 
-            res.on("end", function() {
+            res.on("end", function () {
               if (!(rawData && rawData.length)) {
                 console.error("调用aardio函数时返回空数据,请求数据:", reqData);
                 return reject("RPC服务端返回空数据");
@@ -531,7 +551,7 @@
       });
     };
   } else {
-    xcall = function(method, ...args) {
+    xcall = function (method, ...args) {
       var reqData = JSON.stringify({
         method: method,
         id: method,
