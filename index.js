@@ -1,6 +1,6 @@
 ﻿/*
 可使用 npm i aardio 或 yarn add aardio 安装此模块
-支持chrome.app,electron.app 等，可以让aardio,js可以相互调用函数
+支持chrome.app,electron.app 等，可以让aardio,js 相互调用函数
 */
 
 (function (name, definition) {
@@ -334,27 +334,22 @@
     }
   };
 
-  function on(method, notify) {
-    if (rpcNotifications[method]) {
-      rpcNotifications[method].push(notify);
-    } else {
-      rpcNotifications[method] = [notify];
-    }
-
-    return aardio;
-  }
-
-  on("doScript", js => {
-    if (!aardio.browser) global.eval("(()=>{" + js + "})()");
-    else window.eval("(()=>{" + js + "})()");
-  });
-
   function off(method, notify) {
     if (rpcNotifications[method]) {
       if (notify) {
-        rpcNotifications[method] = rpcNotifications[method].filter(
-          l => l != notify
-        );
+        var fns = rpcNotifications[method] ;
+        if(fns){
+          fns = fns.filter(
+            l => l != notify
+          );
+
+          if(fns.length){
+            rpcNotifications[method] =  fns;
+          }
+          else{
+            delete rpcNotifications[method];
+          }
+        }
       } else {
         delete rpcNotifications[method];
       }
@@ -362,6 +357,26 @@
 
     return aardio;
   }
+
+  function on(method, notify) {
+    if (rpcNotifications[method]) {
+      rpcNotifications[method].push(notify);
+    } else {
+      rpcNotifications[method] = [notify];
+    }
+
+    return {
+      off: ()=>{
+        off(method,notify)
+      }
+    }
+  }
+
+  on("doScript", js => {
+    if (!aardio.browser) global.eval("(()=>{" + js + "})()");
+    else window.eval("(()=>{" + js + "})()");
+  });
+
 
   function emit(method, ...rest) {
     let result;
@@ -586,6 +601,7 @@
 
   aardio.xcall = xcall;
   aardio.on = on;
+  aardio.off = off;
   aardio.ready = callback => {
     if (aardio.isReady) {
       callback(aardio.getCurrentWindow());

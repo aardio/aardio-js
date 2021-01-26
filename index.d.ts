@@ -11,37 +11,58 @@ declare namespace aardio {
         [key: string]: (...args: any[]) => Promise<any>;
     }
 
+    interface ExternalCallback {
+        /** 注销导出到 aardio 的 JS 函数 */
+        off: ()=>void 
+    }
+
     interface External {
 
         /** 引用内置模块 */
         require<T = any>(moduleName: string): T;
+
         /** 引用内置Electron模块 */
         require(moduleName: 'electron'): typeof Electron;
+
         /** 调用aardio函数(即使在aasdl初始化以前仍然可以调用rpc函数) */
         xcall(method: string, ...args: any[]): Promise<any>;
+
         /** 注册aardio可调用的JS函数，如果同一进程内注册多个同名回调，仅回传最后一次回调的返回值，非aardio环境自动忽略不执行 */
-        on(event: string, listener: (...args: any[]) => void): ExternalEx;
+        on(event: string, listener:(...args: any[]) => any): ExternalCallback;
+
+        /** 注销导出到 aardio 的 JS 函数 */
+        off(event: string, listener:(...args: any[]) => any): void;
+
         /** 
          * 在aardio模块以及RPC函数服务端已准备就绪后（如果当前是浏览器渲染进程则DOM已准备就绪），
          * 执行此回调(如果当前已经准备就绪就直接执行) 
          */
         ready(listener: (win?: Electron.BrowserWindow) => void): ExternalEx; 
+
         /** 退出进程 */
         quit: () => void;
+
         /** 拖动标题栏，非aardio环境自动忽略不执行 */
         hitCaption: () => Promise<void>;
+
         /** 点击关闭窗口按钮，非aardio环境自动忽略不执行 */
         hitClose: () => Promise<void>;
+
         /** 点击最小化按钮，非aardio环境自动忽略不执行 */
         hitMin: () => Promise<void>;
+
         /** 点击最大化按钮，非aardio环境自动忽略不执行 */
         hitMax: () => Promise<boolean>;
+
         /** 窗口是否最大化，非aardio环境自动忽略不执行 */
         isZoomed: () => Promise<boolean>;
+
         /** 读取本地数据,此函数默认未定义，请在aardio的external接口导出该函数 */
         get: <T = any>(key: string) => Promise<T>;
+
         /** 写入本地数据,此函数默认未定义，请在aardio的external接口导出该函数 */
         set: <T>(key: string, value?: T) => Promise<void>;
+        
         /** 获取electron主进程全局变量，仅在electron环境中有效 */
         getGlobal<T = any>(sharedObjectName: string): T
     }
