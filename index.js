@@ -109,7 +109,7 @@
         rpcAasdl = sessionStorage.getItem("rpcAasdl");
         if (!rpcAasdl) {
           rpcAasdl = '{{{$rpcAasdl}}}';
-          if (rpcAasdl === '{{{$rpc" + "Aasdl}}}') {
+          if (rpcAasdl === '{{{$rpc' + 'Aasdl}}}') {
             rpcAasdl = null;
           }
         }
