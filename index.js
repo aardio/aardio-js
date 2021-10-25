@@ -41,21 +41,31 @@
         aardio.electron = true;
       }
     } else {
-      if (module) {
-        aardio.require =
-          module[
-          "eriuqer"
-            .split("")
-            .reverse()
-            .join("")
-          ];
-      }
-
       if (
         typeof process.versions === "object" &&
         Boolean(process.versions.electron)
       ) {
         aardio.electron = true;
+      }
+
+      if (module) {
+        aardio.require =
+          global[
+          "eriuqer"
+            .split("")
+            .reverse()
+            .join("")
+          ];
+
+        if(!aardio.require){
+          aardio.require =
+          module[
+          "eriuqer"
+            .split("")
+            .reverse()
+            .join("")
+          ];  
+        }
       }
     }
   } else {

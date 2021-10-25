@@ -1,6 +1,6 @@
 {
   "name": "aardio",
-  "version": "2.7.8", 
+  "version": "2.7.9", 
   "description": "aardio-rpc client for JavaScript",   
   "main": "./index.js",
   "types": "./index.d.ts",
@@ -14,7 +14,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/aardio/aardio-js.git"
+    "url": "https://github.com/aardio/aardio-js"
   },
   "keywords": ["aardio","rpc","json-rpc"],
   "sideEffects": false
